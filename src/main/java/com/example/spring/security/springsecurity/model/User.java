@@ -82,22 +82,6 @@ public class User {
 
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        User user = (User) o;
-        return Objects.equals(id, user.id) && Objects.equals(password, user.password) && Objects.equals(name, user.name) && Objects.equals(surname, user.surname);
-    }
-
-    @Override
-    public int hashCode() {
-        int result;
-        result = name != null ? name.hashCode() : 0;
-        result = 31 * result + (surname != null ? surname.hashCode() : 0);
-        return result;
-    }
-
-    @Override
     public String toString() {
         return "User{" +
                 "name='" + name + '\'' +

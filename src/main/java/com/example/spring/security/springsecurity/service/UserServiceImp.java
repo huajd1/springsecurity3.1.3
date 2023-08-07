@@ -2,6 +2,7 @@ package com.example.spring.security.springsecurity.service;
 
 import com.example.spring.security.springsecurity.model.User;
 import com.example.spring.security.springsecurity.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -22,6 +23,7 @@ public class UserServiceImp implements UserService, UserDetailsService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
+    @Autowired
     public UserServiceImp(UserRepository userRepository, @Lazy PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
@@ -32,7 +34,6 @@ public class UserServiceImp implements UserService, UserDetailsService {
     }
 
     @Override
-    @Transactional(readOnly = true)
     public UserDetails loadUserByUsername(String firstname) throws UsernameNotFoundException {
         User user = findByUsername(firstname);
         if (user == null) {
@@ -46,14 +47,12 @@ public class UserServiceImp implements UserService, UserDetailsService {
     }
 
     @Override
-    @Transactional
     public void addUser(User user) {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         userRepository.save(user);
     }
 
     @Override
-    @Transactional
     public void updateUser(User user) {
         if (!user.getPassword().equals(showUser(user.getId()).getPassword())) {
             user.setPassword(passwordEncoder.encode(user.getPassword()));
@@ -62,7 +61,6 @@ public class UserServiceImp implements UserService, UserDetailsService {
     }
 
     @Override
-    @Transactional
     public void deleteUser(Long id) {
         if (userRepository.findById(id).isPresent()) {
             userRepository.deleteById(id);
@@ -70,15 +68,14 @@ public class UserServiceImp implements UserService, UserDetailsService {
     }
 
     @Override
-    @Transactional
     public List<User> getAllUser() {
         return userRepository.findAll();
     }
 
     @Override
-    @Transactional
     public User showUser(Long id) {
         User user = userRepository.findById(id).get();
         return user;
     }
 }
+

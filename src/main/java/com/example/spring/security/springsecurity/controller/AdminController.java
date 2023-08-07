@@ -7,31 +7,24 @@ import org.springframework.web.bind.annotation.*;
 import com.example.spring.security.springsecurity.model.Role;
 import com.example.spring.security.springsecurity.model.User;
 import com.example.spring.security.springsecurity.service.RoleService;
-import com.example.spring.security.springsecurity.service.RoleServiceImp;
 import com.example.spring.security.springsecurity.service.UserService;
-import com.example.spring.security.springsecurity.service.UserServiceImp;
-
-import java.security.Principal;
 import java.util.Collection;
 import java.util.List;
 
 @Controller
 @RequestMapping("/admin")
 public class AdminController {
-    private UserService userService;
-
-    private RoleService roleService;
+    private final UserService userService;
+    private final RoleService roleService;
 
     @Autowired
-    public AdminController(UserServiceImp userService, RoleServiceImp roleService) {
+    public AdminController(UserService userService, RoleService roleService) {
         this.userService = userService;
         this.roleService = roleService;
     }
 
     @GetMapping(value = "/")
-    public String printUsers(ModelMap model, Principal principal) {
-        User user = userService.findByUsername(principal.getName());
-        model.addAttribute("user", user);
+    public String printUsers(ModelMap model) {
         List<User> listOfUsers = userService.getAllUser();
         model.addAttribute("listOfUsers", listOfUsers);
         return "Users";
@@ -69,5 +62,4 @@ public class AdminController {
         userService.deleteUser(id);
         return "redirect:/admin/";
     }
-
 }

@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@Transactional
 public class UserServiceImp implements UserService, UserDetailsService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -62,8 +63,9 @@ public class UserServiceImp implements UserService, UserDetailsService {
 
     @Override
     public void deleteUser(Long id) {
-        if (userRepository.findById(id).isPresent()) {
-            userRepository.deleteById(id);
+        User user = userRepository.findById(id).orElse(null);
+        if (user!= null) {
+            userRepository.delete(user);
         }
     }
 
@@ -74,8 +76,7 @@ public class UserServiceImp implements UserService, UserDetailsService {
 
     @Override
     public User showUser(Long id) {
-        User user = userRepository.findById(id).get();
-        return user;
+        return userRepository.findById(id).orElse(null);
     }
 }
 

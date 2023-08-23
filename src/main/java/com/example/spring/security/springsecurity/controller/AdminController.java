@@ -1,65 +1,66 @@
 package com.example.spring.security.springsecurity.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.ModelMap;
-import org.springframework.web.bind.annotation.*;
-import com.example.spring.security.springsecurity.model.Role;
+
 import com.example.spring.security.springsecurity.model.User;
-import com.example.spring.security.springsecurity.service.RoleService;
 import com.example.spring.security.springsecurity.service.UserService;
-import java.util.Collection;
+import org.jetbrains.annotations.NotNull;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.web.bind.annotation.*;
+
 import java.util.List;
 
-@Controller
-@RequestMapping("/admin")
-public class AdminController {
+@RestController
+@RequestMapping("api/admin")
+public class AdminRestController {
     private final UserService userService;
-    private final RoleService roleService;
+    private final BCryptPasswordEncoder passwordEncoder;
 
     @Autowired
-    public AdminController(UserService userService, RoleService roleService) {
+    public AdminRestController(UserService userService, BCryptPasswordEncoder passwordEncoder) {
         this.userService = userService;
-        this.roleService = roleService;
+        this.passwordEncoder = passwordEncoder;
+    }
+    @GetMapping
+    public ResponseEntity<List<User>> showUsers() {
+        return new ResponseEntity<>(userService.getAllUsers(), HttpStatus.OK);
     }
 
-    @GetMapping(value = "/")
-    public String printUsers(ModelMap model) {
-        List<User> listOfUsers = userService.getAllUser();
-        model.addAttribute("listOfUsers", listOfUsers);
-        return "Users";
+    @GetMapping("/{id}")
+    public ResponseEntity<User> showUser(@PathVariable("id") int id) {
+        return new ResponseEntity<> (userService.getById(id), HttpStatus.OK);
     }
 
-    @GetMapping("/addNewUser")
-    public String showCreateUserForm(ModelMap model) {
-        User user = new User();
-        Collection<Role> roles = roleService.getAllRoles();
-        model.addAttribute("user", user);
-        model.addAttribute("roles", roles);
-        return "new-user-info";
+    @GetMapping("/userAuth")
+    public ResponseEntity<User> showAuthUser() {
+        return new ResponseEntity<> (userService.getCurrentUser(), HttpStatus.OK);
     }
 
-    @PostMapping("/")
-    public String addUser(@ModelAttribute("user") User user) {
-        userService.addUser(user);
-        return "redirect:/admin/";
-    }
-
-    @GetMapping("/{id}/edit")
-    public String showEditUserForm(ModelMap model, @PathVariable("id") Long id) {
-        model.addAttribute("user", userService.showUser(id));
-        return "/editUser";
-    }
-
-    @PatchMapping("/{id}")
-    public String saveEditUser(@ModelAttribute("user") User user, @PathVariable("id") Long id) {
-        userService.updateUser(user);
-        return "redirect:/admin/";
+    @PostMapping("/newAddUser")
+    public ResponseEntity<HttpStatus> addNewUser(
+            @RequestBody User user
+    ) {
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        userService.add(user);
+        return new ResponseEntity<> (HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}")
-    public String deleteUser(@PathVariable("id") Long id) {
-        userService.deleteUser(id);
-        return "redirect:/admin/";
+    public ResponseEntity<HttpStatus> deleteUser(@PathVariable("id") int id) {
+        userService.delete(id);
+        return new ResponseEntity<> (HttpStatus.OK);
+    }
+
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<HttpStatus> editUser(@RequestBody @NotNull User user, @PathVariable Integer id) {
+        user.setId(id);
+        System.out.println(user);
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        userService.update(user, id);
+
+        return new ResponseEntity<> (HttpStatus.OK);
     }
 }
